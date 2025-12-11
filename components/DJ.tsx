@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Volume2, VolumeX, Maximize, Minimize } from 'lucide-react';
 import { isInIframe } from '../utils/environment';
@@ -52,13 +51,13 @@ const DJ: React.FC<DJProps> = ({ isBeerTime }) => {
   return (
     <>
       {/* Controls Container */}
-      <div className="fixed top-4 right-4 z-50 flex gap-3">
+      <div className="dj-controls">
         
         {/* Fullscreen Button - Only show if NOT embedded in an iframe */}
         {!isEmbedded && (
           <button
             onClick={handleToggleFullscreen}
-            className="p-3 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 rounded-full text-white transition-all hover:scale-105 active:scale-95"
+            className="btn-icon"
             title={isFullscreen ? "Scherm verkleinen" : "Volledig scherm"}
           >
             {isFullscreen ? <Minimize size={24} /> : <Maximize size={24} />}
@@ -68,16 +67,16 @@ const DJ: React.FC<DJProps> = ({ isBeerTime }) => {
         {/* Sound Button */}
         <button
           onClick={handleToggleMute}
-          className="p-3 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 rounded-full text-white transition-all hover:scale-105 active:scale-95 group"
+          className="btn-icon group"
           title={isMuted ? "Geluid aanzetten" : "Geluid uitzetten"}
         >
           {isMuted ? (
-            <VolumeX size={24} className="text-gray-400 group-hover:text-white" />
+            <VolumeX size={24} className="icon-muted" />
           ) : (
-            <div className="relative">
-              <Volume2 size={24} className={shouldPlay ? "animate-pulse text-yellow-400" : ""} />
+            <div className="indicator-wrapper">
+              <Volume2 size={24} className={shouldPlay ? "icon-active" : ""} />
               {shouldPlay && (
-                <span className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-400 rounded-full animate-ping opacity-75"></span>
+                <span className="indicator-dot"></span>
               )}
             </div>
           )}
@@ -86,7 +85,7 @@ const DJ: React.FC<DJProps> = ({ isBeerTime }) => {
 
       {/* Hidden YouTube Player */}
       {isBeerTime && (
-        <div className="hidden">
+        <div style={{ display: 'none' }}>
            {!isMuted && (
              <iframe
                width="560"

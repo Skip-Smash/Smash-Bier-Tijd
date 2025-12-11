@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import Clock from './components/Clock';
 import QuoteDisplay from './components/QuoteDisplay';
@@ -51,10 +50,10 @@ const App: React.FC = () => {
     return () => clearInterval(interval);
   }, [config]);
 
-  if (!config) return <div className="min-h-screen bg-neutral-900 flex items-center justify-center text-white">Laden...</div>;
+  if (!config) return <div className="loading-screen">Laden...</div>;
 
   return (
-    <div className="min-h-screen relative overflow-hidden selection:bg-yellow-500 selection:text-black font-sans">
+    <div className="app-container">
       
       {/* New Dynamic Background */}
       <Background appState={appState} />
@@ -62,14 +61,14 @@ const App: React.FC = () => {
       {/* DJ handles the music - only during actual beer time, not when going home */}
       <DJ isBeerTime={appState === AppState.BEER_TIME} />
 
-      <main className="z-10 relative w-full h-screen flex flex-col">
+      <main className="main-content">
         
         {/* Flexible container to center content but allow footer at bottom */}
-        <div className="flex-grow flex flex-col items-center justify-center px-6">
+        <div className="content-wrapper">
           
           {/* Header Branding - Only show if NOT embedded */}
           {!isEmbedded && (
-            <div className="mb-8 text-white/50 font-bold tracking-[0.5em] text-xs md:text-sm uppercase drop-shadow-md">
+            <div className="header-branding">
               Smash Studios Internal Tool
             </div>
           )}
@@ -87,7 +86,7 @@ const App: React.FC = () => {
 
         {/* Footer - Hide if embedded to save space */}
         {!isEmbedded && (
-          <footer className="py-6 text-white/30 text-xs text-center w-full">
+          <footer className="footer">
             &copy; {new Date().getFullYear()} Smash Studios. Drink verantwoord.
           </footer>
         )}

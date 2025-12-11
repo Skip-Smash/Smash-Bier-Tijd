@@ -1,8 +1,2 @@
-/** @type {import('tailwindcss').Config} */
-export default {
-  content: [],
-  theme: {
-    extend: {},
-  },
-  plugins: [],
-}
+// Tailwind CSS has been removed from this project.
+export default {}

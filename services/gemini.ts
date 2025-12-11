@@ -20,11 +20,18 @@ export const fetchBeerQuote = async (): Promise<string> => {
   try {
     const ai = new GoogleGenAI({ apiKey });
     
+    // Updated prompt to enforce a single result
     const prompt = `
-      Genereer een korte, grappige en motiverende Nederlandse zin (maximaal 15 woorden) over dat het tijd is voor bier, 
-      speciaal voor 'Smash Studios'. Het mag met een knipoog zijn. 
-      Gebruik geen quotes rondom de tekst.
-      Voorbeelden van toon: "Hup, die laptop dicht, tijd voor goud!", "Smash Studios residenten: Hydrateer met hop."
+      Genereer PRECIES ÉÉN korte, grappige en motiverende Nederlandse zin (maximaal 15 woorden) over dat het tijd is voor bier, 
+      speciaal voor 'Smash Studios'.
+      
+      Belangrijke regels:
+      1. Geef ALLEEN de zin terug. Geen lijstjes, geen nummering, geen opties.
+      2. Geen aanhalingstekens rondom de zin.
+      3. Geen inleidende tekst zoals "Hier is een zin:".
+      
+      Stijl: Met een knipoog, energiek.
+      Voorbeeld output: Hup, die laptop dicht, tijd voor goud!
     `;
 
     const response = await ai.models.generateContent({

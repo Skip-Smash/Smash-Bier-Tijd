@@ -29,25 +29,27 @@ const QuoteDisplay: React.FC<QuoteDisplayProps> = ({ appState }) => {
   }, [appState]);
 
   if (loading) {
-    return <div className="animate-pulse text-yellow-500/50 mt-8">Laden van wijsheid...</div>;
+    return <div className="loading-text">Laden van wijsheid...</div>;
   }
 
   const isBeerTime = appState === AppState.BEER_TIME;
   const isGoHome = appState === AppState.GO_HOME;
 
+  const getTextColorClass = () => {
+    if (isBeerTime) return 'text-beer';
+    if (isGoHome) return 'text-home';
+    return 'text-default'; // gray
+  };
+
   return (
-    <div className="mt-8 max-w-2xl mx-auto px-4">
-      <div className={`transform transition-all duration-700 ${isBeerTime ? 'scale-110' : 'scale-100'}`}>
+    <div className="quote-container">
+      <div className={`quote-wrapper ${isBeerTime ? 'active' : ''}`}>
         {isBeerTime && (
-            <div className="flex justify-center mb-4 text-yellow-400 animate-float">
+            <div className="icon-float">
                 <Beer size={48} />
             </div>
         )}
-        <p className={`text-2xl md:text-4xl font-bold text-center leading-tight ${
-          isBeerTime ? 'text-yellow-400' : 
-          isGoHome ? 'text-purple-300' :
-          'text-gray-400'
-        }`}>
+        <p className={`quote-text ${getTextColorClass()}`}>
           "{quote}"
         </p>
       </div>

@@ -16,18 +16,18 @@ const Clock: React.FC<ClockProps> = ({ appState }) => {
     return () => clearInterval(timer);
   }, []);
 
-  const getTextColor = () => {
-    if (appState === AppState.BEER_TIME) return 'text-yellow-400';
-    if (appState === AppState.GO_HOME) return 'text-purple-300';
-    return 'text-gray-200';
+  const getTextColorClass = () => {
+    if (appState === AppState.BEER_TIME) return 'text-beer';
+    if (appState === AppState.GO_HOME) return 'text-home';
+    return 'text-default';
   };
 
   return (
-    <div className={`text-center transition-colors duration-500 ${getTextColor()}`}>
-      <div className="font-display text-7xl md:text-9xl tracking-wider drop-shadow-lg tabular-nums">
+    <div className={`clock-container ${getTextColorClass()}`}>
+      <div className="clock-time">
         {formatTime(currentTime)}
       </div>
-      <div className="text-sm md:text-xl text-gray-500 mt-2 tracking-[0.2em] uppercase font-bold">
+      <div className="clock-date">
         {currentTime.toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' })}
       </div>
     </div>

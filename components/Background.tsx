@@ -22,65 +22,54 @@ const Background: React.FC<BackgroundProps> = ({ appState }) => {
     }));
   }, []);
 
-  const getGradient = () => {
-    if (isGoHome) return 'bg-gradient-to-b from-indigo-900 via-purple-900 to-black';
-    if (isBeerTime) return 'bg-gradient-to-b from-yellow-500 via-amber-600 to-amber-900';
-    return 'bg-gradient-to-b from-neutral-900 via-neutral-950 to-black';
+  const getGradientClass = () => {
+    if (isGoHome) return 'grad-home';
+    if (isBeerTime) return 'grad-beer';
+    return 'grad-default';
   };
 
   return (
-    <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none transition-all duration-1000 ease-in-out">
+    <div className="bg-fixed">
       
       {/* Base Gradient Layer */}
-      <div 
-        className={`absolute inset-0 transition-all duration-1000 ${getGradient()} opacity-100`}
-      />
+      <div className={`bg-layer ${getGradientClass()} opacity-100`} />
 
       {/* Secondary Overlay for Depth */}
-      <div 
-        className={`absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_#000_100%)] opacity-60`} 
-      />
+      <div className="bg-layer radial-overlay" />
 
       {/* Beer Time Specific Overlay (Gold Glow) */}
-      <div 
-        className={`absolute inset-0 bg-yellow-400/20 mix-blend-overlay transition-opacity duration-1000 ${
-          isBeerTime ? 'opacity-100' : 'opacity-0'
-        }`} 
-      />
+      <div className={`bg-layer glow-overlay-gold ${isBeerTime ? 'opacity-100' : 'opacity-0'}`} />
 
       {/* Go Home Specific Overlay (Twilight/Night Glow) */}
-      <div 
-        className={`absolute inset-0 bg-purple-500/20 mix-blend-overlay transition-opacity duration-1000 ${
-          isGoHome ? 'opacity-100' : 'opacity-0'
-        }`} 
-      />
+      <div className={`bg-layer glow-overlay-purple ${isGoHome ? 'opacity-100' : 'opacity-0'}`} />
 
       {/* Particles/Bubbles */}
-      {bubbles.map((bubble) => (
-        <div
-          key={bubble.id}
-          className={`bubble transition-all duration-1000 ${
-            isBeerTime ? 'bg-yellow-200/40 shadow-[0_0_4px_rgba(255,255,255,0.8)] rounded-full' : 
-            isGoHome ? 'bg-white shadow-[0_0_6px_rgba(255,255,255,0.9)] rounded-full' : // Stars for Go Home
-            'bg-white/5 rounded-full'
-          }`}
-          style={{
-            left: bubble.left,
-            width: isGoHome ? Math.max(2, parseFloat(bubble.size) / 3) + 'px' : bubble.size, // Smaller stars
-            height: isGoHome ? Math.max(2, parseFloat(bubble.size) / 3) + 'px' : bubble.size,
-            animationDuration: isBeerTime ? `3s` : bubble.duration, 
-            animationDelay: isBeerTime ? `${Math.random() * 2}s` : bubble.delay,
-            '--wobble': isGoHome ? '0px' : bubble.wobble, // Stars don't wobble as much
-          } as React.CSSProperties}
-        />
-      ))}
+      {bubbles.map((bubble) => {
+        // Dynamic inline styles for bubbles
+        const bubbleStyle: React.CSSProperties = {
+          left: bubble.left,
+          width: isGoHome ? Math.max(2, parseFloat(bubble.size) / 3) + 'px' : bubble.size,
+          height: isGoHome ? Math.max(2, parseFloat(bubble.size) / 3) + 'px' : bubble.size,
+          animationDuration: isBeerTime ? `3s` : bubble.duration, 
+          animationDelay: isBeerTime ? `${Math.random() * 2}s` : bubble.delay,
+          '--wobble': isGoHome ? '0px' : bubble.wobble,
+          backgroundColor: isBeerTime ? 'rgba(254, 240, 138, 0.4)' : // Yellow-200ish
+                           isGoHome ? 'white' : 'rgba(255, 255, 255, 0.05)',
+          boxShadow: isBeerTime ? '0 0 4px rgba(255,255,255,0.8)' : 
+                     isGoHome ? '0 0 6px rgba(255,255,255,0.9)' : 'none'
+        };
+
+        return (
+          <div
+            key={bubble.id}
+            className="bubble"
+            style={bubbleStyle}
+          />
+        );
+      })}
       
       {/* Foam Head Effect (Only visible during Beer Time) */}
-      <div 
-        className={`absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-white/90 to-transparent transition-transform duration-1000 origin-top ${
-          isBeerTime ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'
-        }`} 
-      />
+      <div className={`foam-effect ${isBeerTime ? 'active' : ''}`} />
     </div>
   );
 };
