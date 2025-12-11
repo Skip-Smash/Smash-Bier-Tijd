@@ -65,12 +65,13 @@
 
         .header-branding {
             margin-bottom: 2rem;
-            color: rgba(255, 255, 255, 0.5);
+            color: rgba(255, 255, 255, 0.3);
             font-weight: bold;
             letter-spacing: 0.5em;
             font-size: 0.75rem;
             text-transform: uppercase;
             text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            transition: color 1s ease;
         }
 
         .footer {
@@ -103,17 +104,18 @@
 
         .text-beer { color: var(--color-beer); }
         .text-home { color: #d8b4fe; }
-        .text-default { color: #e5e7eb; }
+        .text-default { color: #94a3b8; } /* Slate 400 - Sadder gray */
 
         /* Status Card */
         .status-card {
             margin-top: 3rem; padding: 1.5rem;
             border-radius: 1rem; text-align: center;
             backdrop-filter: blur(8px); width: 100%; max-width: 500px;
+            transition: all 1s ease;
         }
         .status-card.waiting {
-            background: rgba(31, 41, 55, 0.5);
-            border: 1px solid rgba(55, 65, 81, 1);
+            background: rgba(15, 23, 42, 0.6); /* Dark slate */
+            border: 1px solid rgba(51, 65, 85, 0.5);
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
         .waiting-label {
@@ -121,10 +123,13 @@
             text-transform: uppercase; letter-spacing: 0.1em;
             font-weight: 600; margin-bottom: 0.5rem;
         }
-        .waiting-time { font-size: 3rem; font-family: var(--font-display); color: white; }
+        .waiting-time { font-size: 3rem; font-family: var(--font-display); color: white; opacity: 0.8; font-variant-numeric: tabular-nums; }
+        .waiting-time.mystery { letter-spacing: 0.2em; }
+        .waiting-time.countdown { color: #fcd34d; text-shadow: 0 0 20px rgba(252, 211, 77, 0.3); }
+
         .info-row {
             margin-top: 1.5rem; display: flex; align-items: center;
-            justify-content: center; gap: 0.5rem; color: #4b5563;
+            justify-content: center; gap: 0.5rem; color: #64748b;
             font-size: 0.75rem; text-align: center;
         }
 
@@ -165,10 +170,12 @@
 
         /* Background */
         .bg-fixed { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
-        .bg-layer { position: absolute; inset: 0; transition: all 1s ease-in-out; }
-        .grad-default { background: linear-gradient(to bottom, #171717, #0a0a0a, #000); }
+        .bg-layer { position: absolute; inset: 0; transition: all 2s ease-in-out; }
+        
+        .grad-waiting { background: linear-gradient(to bottom, #1e293b, #0f172a, #020617); } /* Sad, dark blue/slate */
         .grad-beer { background: linear-gradient(to bottom, #eab308, #d97706, #78350f); }
         .grad-home { background: linear-gradient(to bottom, #312e81, #581c87, #000); }
+        
         .radial-overlay { background: radial-gradient(circle at center, transparent 0%, #000 100%); opacity: 0.6; }
         .glow-overlay-gold { background: rgba(250, 204, 21, 0.2); mix-blend-mode: overlay; opacity: 0; }
         .glow-overlay-purple { background: rgba(168, 85, 247, 0.2); mix-blend-mode: overlay; opacity: 0; }
@@ -182,6 +189,19 @@
             transform: translateY(-100%); opacity: 0;
         }
         .foam-effect.active { transform: translateY(0); opacity: 1; }
+
+        /* Rain Animation */
+        .rain-drop {
+            position: absolute;
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(148, 163, 184, 0.2));
+            width: 1px;
+            top: -20vh;
+            animation: rainfall linear infinite;
+        }
+        @keyframes rainfall {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(120vh); }
+        }
 
         /* DJ */
         .dj-controls { position: fixed; top: 1rem; right: 1rem; z-index: 50; display: flex; gap: 0.75rem; }
@@ -207,7 +227,7 @@
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
         @keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }
         .bubble { position: absolute; border-radius: 50%; bottom: -10vh; animation: rise infinite linear; pointer-events: none; }
-        .loading-screen { min-height: 100vh; background-color: #171717; display: flex; align-items: center; justify-content: center; color: white; }
+        .loading-screen { min-height: 100vh; background-color: #0f172a; display: flex; align-items: center; justify-content: center; color: white; }
     </style>
 
     <!-- Import Map for Libraries -->
@@ -235,7 +255,7 @@
     <script type="text/babel" data-type="module">
         import React, { useEffect, useState, useMemo } from 'react';
         import ReactDOM from 'react-dom/client';
-        import { Info, Moon, Beer, Volume2, VolumeX, Maximize, Minimize } from 'lucide-react';
+        import { Info, Moon, Beer, Volume2, VolumeX, Maximize, Minimize, Timer, HelpCircle } from 'lucide-react';
         
         // --- CONFIGURATION ---
         // VUL HIER JE API KEY IN ALS JE DIE HEBT, ANDERS BLIJFT HET LEEG
@@ -265,19 +285,39 @@
             const dateString = now.toISOString().split('T')[0];
             const randomValue = seededRandom(dateString + "SmashStudiosBeer");
             const dayOfWeek = now.getDay();
-            
-            const startHour = 11;
-            const startMinute = 0;
-            const startTimeInMinutes = startHour * 60 + startMinute;
+            const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
 
+            // Weekend Logic: All day beer time
+            if (isWeekend) {
+                const targetDate = new Date(now);
+                targetDate.setHours(0, 0, 0, 0); // Start of day
+                const endDate = new Date(now);
+                endDate.setHours(23, 59, 59, 999);
+                return {
+                    hour: 0,
+                    minute: 0,
+                    timestamp: targetDate.getTime(),
+                    endTimestamp: endDate.getTime(),
+                    isWeekend: true
+                };
+            }
+            
+            // Standard settings (Mon-Thu): 15:00 - 17:00
+            let startHour = 15;
+            let startMinute = 0;
+            
             let generationEndHour = 17;
             let generationEndMinute = 0;
             
-            if (dayOfWeek === 5) { // Friday
-                generationEndHour = 14;
-                generationEndMinute = 30;
+            // Friday: 13:30 - 15:00 (Vrijmibo)
+            if (dayOfWeek === 5) { 
+                startHour = 13;
+                startMinute = 30;
+                generationEndHour = 15;
+                generationEndMinute = 0;
             }
             
+            const startTimeInMinutes = startHour * 60 + startMinute;
             const generationEndTimeInMinutes = generationEndHour * 60 + generationEndMinute;
             const totalDuration = generationEndTimeInMinutes - startTimeInMinutes;
             
@@ -298,6 +338,7 @@
                 minute: targetMinute,
                 timestamp: targetDate.getTime(),
                 endTimestamp: endDate.getTime(),
+                isWeekend: false
             };
         };
 
@@ -309,6 +350,13 @@
             const h = hour.toString().padStart(2, '0');
             const m = minute.toString().padStart(2, '0');
             return `${h}:${m}`;
+        };
+
+        const formatCountdown = (ms) => {
+            if (ms < 0) ms = 0;
+            const minutes = Math.floor(ms / 60000);
+            const seconds = Math.floor((ms % 60000) / 1000);
+            return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         };
 
         const isInIframe = () => {
@@ -328,7 +376,6 @@
             if (!API_KEY) {
                 return FALLBACK_QUOTES[Math.floor(Math.random() * FALLBACK_QUOTES.length)];
             }
-            // Simple fetch to Gemini API REST endpoint to avoid heavy SDK import issues in standalone mode
             try {
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`, {
                     method: 'POST',
@@ -351,14 +398,7 @@
 
         // --- COMPONENTS ---
         
-        const Clock = ({ appState }) => {
-            const [currentTime, setCurrentTime] = useState(new Date());
-
-            useEffect(() => {
-                const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-                return () => clearInterval(timer);
-            }, []);
-
+        const Clock = ({ currentTime, appState }) => {
             const getTextColorClass = () => {
                 if (appState === AppState.BEER_TIME) return 'text-beer';
                 if (appState === AppState.GO_HOME) return 'text-home';
@@ -375,12 +415,16 @@
             );
         };
 
-        const BeerStatus = ({ config, appState }) => {
+        const BeerStatus = ({ config, appState, currentTime }) => {
             if (appState === AppState.BEER_TIME) {
                 return (
                     <div className="status-card beer-time">
-                        <h2 className="title-large text-beer title-rotate">HET IS TIJD!</h2>
-                        <p className="subtitle-beer">Smash Studios Borrel</p>
+                        <h2 className="title-large text-beer title-rotate">
+                            {config.isWeekend ? "WEEKEND!" : "HET IS TIJD!"}
+                        </h2>
+                        <p className="subtitle-beer">
+                            {config.isWeekend ? "Hele dag biertijd" : "Smash Studios Borrel"}
+                        </p>
                     </div>
                 );
             }
@@ -393,15 +437,43 @@
                     </div>
                 );
             }
+
+            // Waiting State Logic
+            const timeToWait = config.timestamp - currentTime.getTime();
+            const minutesToWait = timeToWait / 60000;
+            const showCountdown = minutesToWait <= 30;
+
+            if (showCountdown) {
+                return (
+                    <div className="status-card waiting">
+                        <div className="waiting-content">
+                            <p className="waiting-label">Aftellen is begonnen!</p>
+                            <div className="waiting-time countdown">{formatCountdown(timeToWait)}</div>
+                        </div>
+                        <div className="info-row">
+                            <Timer size={14} className="text-beer" />
+                            <p>Bijna tijd voor goud</p>
+                        </div>
+                    </div>
+                );
+            }
+
+            // Mystery State (> 30 mins)
+            const getRangeText = () => {
+                const day = new Date().getDay();
+                if (day === 5) return '13:30 en 15:00';
+                return '15:00 en 17:00';
+            };
+
             return (
                 <div className="status-card waiting">
                     <div className="waiting-content">
-                        <p className="waiting-label">Vandaag bier tijd om</p>
-                        <div className="waiting-time">{formatShortTime(config.hour, config.minute)}</div>
+                        <p className="waiting-label">Biertijd is een verrassing</p>
+                        <div className="waiting-time mystery">??:??</div>
                     </div>
                     <div className="info-row">
-                        <Info size={14} />
-                        <p>Tijd wordt dagelijks willekeurig bepaald tussen 11:00 en {new Date().getDay() === 5 ? '14:30' : '17:00'}.</p>
+                        <HelpCircle size={14} />
+                        <p>Tussen {getRangeText()}</p>
                     </div>
                 </div>
             );
@@ -451,6 +523,7 @@
         const Background = ({ appState }) => {
             const isBeerTime = appState === AppState.BEER_TIME;
             const isGoHome = appState === AppState.GO_HOME;
+            const isWaiting = appState === AppState.WAITING;
 
             const bubbles = useMemo(() => {
                 return Array.from({ length: 40 }).map((_, i) => ({
@@ -463,10 +536,21 @@
                 }));
             }, []);
 
+            const rainDrops = useMemo(() => {
+                return Array.from({ length: 60 }).map((_, i) => ({
+                    id: i,
+                    left: `${Math.random() * 100}%`,
+                    height: `${Math.random() * 20 + 10}px`, 
+                    duration: `${Math.random() * 0.8 + 0.3}s`, 
+                    delay: `${Math.random() * 2}s`,
+                    opacity: Math.random() * 0.3 + 0.1
+                }));
+            }, []);
+
             const getGradientClass = () => {
                 if (isGoHome) return 'grad-home';
                 if (isBeerTime) return 'grad-beer';
-                return 'grad-default';
+                return 'grad-waiting';
             };
 
             return (
@@ -476,18 +560,31 @@
                     <div className={`bg-layer glow-overlay-gold ${isBeerTime ? 'opacity-100' : 'opacity-0'}`} />
                     <div className={`bg-layer glow-overlay-purple ${isGoHome ? 'opacity-100' : 'opacity-0'}`} />
                     
-                    {bubbles.map((bubble) => (
-                        <div key={bubble.id} className="bubble" style={{
+                    {/* Rain Logic for Waiting State */}
+                    {isWaiting && rainDrops.map((drop) => (
+                        <div key={`rain-${drop.id}`} className="rain-drop" style={{
+                            left: drop.left,
+                            height: drop.height,
+                            animationDuration: drop.duration,
+                            animationDelay: drop.delay,
+                            opacity: drop.opacity
+                        }} />
+                    ))}
+
+                    {/* Bubble Logic for Beer Time / Home Time */}
+                    {!isWaiting && bubbles.map((bubble) => (
+                        <div key={`bubble-${bubble.id}`} className="bubble" style={{
                             left: bubble.left,
                             width: isGoHome ? Math.max(2, parseFloat(bubble.size) / 3) + 'px' : bubble.size,
                             height: isGoHome ? Math.max(2, parseFloat(bubble.size) / 3) + 'px' : bubble.size,
                             animationDuration: isBeerTime ? `3s` : bubble.duration, 
                             animationDelay: isBeerTime ? `${Math.random() * 2}s` : bubble.delay,
                             '--wobble': isGoHome ? '0px' : bubble.wobble,
-                            backgroundColor: isBeerTime ? 'rgba(254, 240, 138, 0.4)' : isGoHome ? 'white' : 'rgba(255, 255, 255, 0.05)',
+                            backgroundColor: isBeerTime ? 'rgba(254, 240, 138, 0.4)' : isGoHome ? 'white' : 'transparent',
                             boxShadow: isBeerTime ? '0 0 4px rgba(255,255,255,0.8)' : isGoHome ? '0 0 6px rgba(255,255,255,0.9)' : 'none'
                         }} />
                     ))}
+
                     <div className={`foam-effect ${isBeerTime ? 'active' : ''}`} />
                 </div>
             );
@@ -555,6 +652,7 @@
         const App = () => {
             const [config, setConfig] = useState(null);
             const [appState, setAppState] = useState(AppState.LOADING);
+            const [currentTime, setCurrentTime] = useState(new Date());
             const [isEmbedded, setIsEmbedded] = useState(false);
 
             useEffect(() => {
@@ -564,20 +662,20 @@
 
             useEffect(() => {
                 if (!config) return;
-                const checkTime = () => {
+                const timer = setInterval(() => {
                     const now = new Date();
-                    const currentTime = now.getTime();
-                    if (currentTime > config.endTimestamp) {
+                    setCurrentTime(now);
+                    const nowTime = now.getTime();
+
+                    if (nowTime > config.endTimestamp) {
                         setAppState(AppState.GO_HOME);
-                    } else if (currentTime >= config.timestamp) {
+                    } else if (nowTime >= config.timestamp) {
                         setAppState(AppState.BEER_TIME);
                     } else {
                         setAppState(AppState.WAITING);
                     }
-                };
-                checkTime();
-                const interval = setInterval(checkTime, 1000);
-                return () => clearInterval(interval);
+                }, 1000);
+                return () => clearInterval(timer);
             }, [config]);
 
             if (!config) return <div className="loading-screen">Laden...</div>;
@@ -591,8 +689,8 @@
                             {!isEmbedded && (
                                 <div className="header-branding">Smash Studios Internal Tool</div>
                             )}
-                            <Clock appState={appState} />
-                            <BeerStatus config={config} appState={appState} />
+                            <Clock currentTime={currentTime} appState={appState} />
+                            <BeerStatus config={config} appState={appState} currentTime={currentTime} />
                             <QuoteDisplay appState={appState} />
                         </div>
                         {!isEmbedded && (
