@@ -1,33 +1,611 @@
 <!DOCTYPE html>
 <html lang="nl">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Smash Studios Beer Time</title>
     
-    <!-- PWA Settings -->
-    <link rel="manifest" href="./manifest.json" />
-    <meta name="theme-color" content="#000000" />
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Icons & PWA -->
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/931/931949.png">
-  <script type="importmap">
+    <meta name="theme-color" content="#111111" />
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- CSS Styles -->
+    <style>
+        :root {
+            --color-bg: #111;
+            --color-text: #fff;
+            --color-beer: #eab308;
+            --color-home: #a855f7;
+            --color-home-bg: rgba(88, 28, 135, 0.4);
+            --color-gray: #9ca3af;
+            --font-main: 'Inter', sans-serif;
+            --font-display: 'Anton', sans-serif;
+        }
+
+        * { box-sizing: border-box; }
+        
+        body {
+            margin: 0; padding: 0;
+            font-family: var(--font-main);
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            overflow-x: hidden;
+            overscroll-behavior-y: none;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .app-container {
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .main-content {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .content-wrapper {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        .header-branding {
+            margin-bottom: 2rem;
+            color: rgba(255, 255, 255, 0.5);
+            font-weight: bold;
+            letter-spacing: 0.5em;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .footer {
+            padding: 1.5rem 0;
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 0.75rem;
+            text-align: center;
+            width: 100%;
+        }
+
+        /* Clock */
+        .clock-container { text-align: center; transition: color 0.5s ease; }
+        .clock-time {
+            font-family: var(--font-display);
+            font-size: 4.5rem;
+            line-height: 1;
+            letter-spacing: 0.05em;
+            text-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            font-variant-numeric: tabular-nums;
+        }
+        .clock-date {
+            font-size: 0.875rem; color: var(--color-gray);
+            margin-top: 0.5rem; letter-spacing: 0.2em;
+            text-transform: uppercase; font-weight: bold;
+        }
+        @media (min-width: 768px) {
+            .clock-time { font-size: 8rem; }
+            .clock-date { font-size: 1.25rem; }
+        }
+
+        .text-beer { color: var(--color-beer); }
+        .text-home { color: #d8b4fe; }
+        .text-default { color: #e5e7eb; }
+
+        /* Status Card */
+        .status-card {
+            margin-top: 3rem; padding: 1.5rem;
+            border-radius: 1rem; text-align: center;
+            backdrop-filter: blur(8px); width: 100%; max-width: 500px;
+        }
+        .status-card.waiting {
+            background: rgba(31, 41, 55, 0.5);
+            border: 1px solid rgba(55, 65, 81, 1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        .waiting-label {
+            color: var(--color-gray); font-size: 0.875rem;
+            text-transform: uppercase; letter-spacing: 0.1em;
+            font-weight: 600; margin-bottom: 0.5rem;
+        }
+        .waiting-time { font-size: 3rem; font-family: var(--font-display); color: white; }
+        .info-row {
+            margin-top: 1.5rem; display: flex; align-items: center;
+            justify-content: center; gap: 0.5rem; color: #4b5563;
+            font-size: 0.75rem; text-align: center;
+        }
+
+        .status-card.beer-time {
+            border: 4px solid var(--color-beer);
+            background: rgba(234, 179, 8, 0.1);
+            animation: pulse-glow 2s infinite;
+        }
+        .title-large {
+            font-size: 2.25rem; font-weight: 900;
+            text-transform: uppercase; letter-spacing: -0.05em; margin: 0;
+        }
+        @media (min-width: 768px) { .title-large { font-size: 3.75rem; } }
+        .title-rotate { transform: rotate(-2deg); display: inline-block; }
+        .subtitle-beer { color: #fef08a; margin-top: 0.5rem; font-weight: bold; text-transform: uppercase; letter-spacing: 0.1em; }
+
+        .status-card.go-home {
+            border: 4px solid var(--color-home);
+            background: var(--color-home-bg);
+        }
+        .subtitle-home { color: #e9d5ff; margin-top: 0.5rem; font-weight: bold; text-transform: uppercase; letter-spacing: 0.1em; }
+        .icon-container { display: flex; justify-content: center; margin-bottom: 0.5rem; color: #d8b4fe; }
+
+        /* Quote */
+        .quote-container { margin-top: 2rem; max-width: 42rem; padding: 0 1rem; width: 100%; }
+        .quote-wrapper { transition: all 0.7s ease; transform-origin: center; }
+        .quote-wrapper.active { transform: scale(1.1); }
+        .icon-float {
+            display: flex; justify-content: center; margin-bottom: 1rem;
+            color: var(--color-beer); animation: float 3s ease-in-out infinite;
+        }
+        .quote-text {
+            font-size: 1.5rem; font-weight: bold; text-align: center;
+            line-height: 1.2; margin: 0;
+        }
+        @media (min-width: 768px) { .quote-text { font-size: 2.25rem; } }
+        .loading-text { margin-top: 2rem; color: rgba(234, 179, 8, 0.5); text-align: center; }
+
+        /* Background */
+        .bg-fixed { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+        .bg-layer { position: absolute; inset: 0; transition: all 1s ease-in-out; }
+        .grad-default { background: linear-gradient(to bottom, #171717, #0a0a0a, #000); }
+        .grad-beer { background: linear-gradient(to bottom, #eab308, #d97706, #78350f); }
+        .grad-home { background: linear-gradient(to bottom, #312e81, #581c87, #000); }
+        .radial-overlay { background: radial-gradient(circle at center, transparent 0%, #000 100%); opacity: 0.6; }
+        .glow-overlay-gold { background: rgba(250, 204, 21, 0.2); mix-blend-mode: overlay; opacity: 0; }
+        .glow-overlay-purple { background: rgba(168, 85, 247, 0.2); mix-blend-mode: overlay; opacity: 0; }
+        .opacity-100 { opacity: 1; }
+        .opacity-0 { opacity: 0; }
+
+        .foam-effect {
+            position: absolute; top: 0; left: 0; right: 0; height: 8rem;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.9), transparent);
+            transition: transform 1s, opacity 1s; transform-origin: top;
+            transform: translateY(-100%); opacity: 0;
+        }
+        .foam-effect.active { transform: translateY(0); opacity: 1; }
+
+        /* DJ */
+        .dj-controls { position: fixed; top: 1rem; right: 1rem; z-index: 50; display: flex; gap: 0.75rem; }
+        .btn-icon {
+            padding: 0.75rem; background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 9999px; color: white; cursor: pointer;
+            transition: all 0.2s; display: flex; align-items: center; justify-content: center;
+        }
+        .btn-icon:hover { background: rgba(255, 255, 255, 0.2); transform: scale(1.05); }
+        .indicator-dot {
+            position: absolute; top: -4px; right: -4px; width: 8px; height: 8px;
+            background-color: var(--color-beer); border-radius: 50%;
+            animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+        }
+        .icon-active { animation: pulse 2s infinite; color: var(--color-beer); }
+        .icon-muted { color: var(--color-gray); }
+
+        /* Animations */
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
+        @keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 20px rgba(234, 179, 8, 0.2); } 50% { box-shadow: 0 0 40px rgba(234, 179, 8, 0.6); } }
+        @keyframes rise { 0% { bottom: -10vh; transform: translateX(0); opacity: 0; } 20% { opacity: 1; } 80% { opacity: 0.8; } 100% { bottom: 110vh; transform: translateX(var(--wobble)); opacity: 0; } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+        @keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }
+        .bubble { position: absolute; border-radius: 50%; bottom: -10vh; animation: rise infinite linear; pointer-events: none; }
+        .loading-screen { min-height: 100vh; background-color: #171717; display: flex; align-items: center; justify-content: center; color: white; }
+    </style>
+
+    <!-- Import Map for Libraries -->
+    <script type="importmap">
 {
   "imports": {
-    "react": "https://esm.sh/react@^19.2.1",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.1/",
+    "react": "https://esm.sh/react@18.2.0",
+    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+    "lucide-react": "https://esm.sh/lucide-react@0.344.0",
+    "@google/genai": "https://esm.sh/@google/genai@0.1.2",
     "react/": "https://esm.sh/react@^19.2.1/",
-    "@google/genai": "https://esm.sh/@google/genai@^1.33.0",
-    "lucide-react": "https://esm.sh/lucide-react@^0.560.0",
     "vite": "https://esm.sh/vite@^7.2.7",
     "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2"
   }
 }
 </script>
+
+    <!-- Babel for on-the-fly compiling -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
-  <body>
+<body>
     <div id="root"></div>
-    <script type="module" src="./index.tsx"></script>
-  </body>
+
+    <!-- Application Code -->
+    <script type="text/babel" data-type="module">
+        import React, { useEffect, useState, useMemo } from 'react';
+        import ReactDOM from 'react-dom/client';
+        import { Info, Moon, Beer, Volume2, VolumeX, Maximize, Minimize } from 'lucide-react';
+        
+        // --- CONFIGURATION ---
+        // VUL HIER JE API KEY IN ALS JE DIE HEBT, ANDERS BLIJFT HET LEEG
+        const API_KEY = ""; 
+
+        // --- TYPES & UTILS ---
+        const AppState = {
+            LOADING: 'LOADING',
+            WAITING: 'WAITING',
+            BEER_TIME: 'BEER_TIME',
+            GO_HOME: 'GO_HOME',
+        };
+
+        function seededRandom(seed) {
+            let hash = 0;
+            for (let i = 0; i < seed.length; i++) {
+                const char = seed.charCodeAt(i);
+                hash = (hash << 5) - hash + char;
+                hash = hash & hash;
+            }
+            const x = Math.sin(hash) * 10000;
+            return x - Math.floor(x);
+        }
+
+        const getDailyBeerTime = () => {
+            const now = new Date();
+            const dateString = now.toISOString().split('T')[0];
+            const randomValue = seededRandom(dateString + "SmashStudiosBeer");
+            const dayOfWeek = now.getDay();
+            
+            const startHour = 11;
+            const startMinute = 0;
+            const startTimeInMinutes = startHour * 60 + startMinute;
+
+            let generationEndHour = 17;
+            let generationEndMinute = 0;
+            
+            if (dayOfWeek === 5) { // Friday
+                generationEndHour = 14;
+                generationEndMinute = 30;
+            }
+            
+            const generationEndTimeInMinutes = generationEndHour * 60 + generationEndMinute;
+            const totalDuration = generationEndTimeInMinutes - startTimeInMinutes;
+            
+            const randomAddedMinutes = Math.floor(randomValue * totalDuration);
+            const targetTimeInMinutes = startTimeInMinutes + randomAddedMinutes;
+            
+            const targetHour = Math.floor(targetTimeInMinutes / 60);
+            const targetMinute = targetTimeInMinutes % 60;
+
+            const targetDate = new Date(now);
+            targetDate.setHours(targetHour, targetMinute, 0, 0);
+
+            const endDate = new Date(now);
+            endDate.setHours(23, 59, 59, 999);
+
+            return {
+                hour: targetHour,
+                minute: targetMinute,
+                timestamp: targetDate.getTime(),
+                endTimestamp: endDate.getTime(),
+            };
+        };
+
+        const formatTime = (date) => {
+            return date.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        };
+
+        const formatShortTime = (hour, minute) => {
+            const h = hour.toString().padStart(2, '0');
+            const m = minute.toString().padStart(2, '0');
+            return `${h}:${m}`;
+        };
+
+        const isInIframe = () => {
+            try { return window.self !== window.top; } catch (e) { return true; }
+        };
+
+        // --- SERVICES ---
+        const FALLBACK_QUOTES = [
+            "Bier is het bewijs dat god van ons houdt en wil dat we gelukkig zijn.",
+            "Tijd om te smashen met een biertje!",
+            "Werk hard, borrel harder.",
+            "De klok tikt, het bier wacht.",
+            "Vrijdagmiddagborrel state of mind."
+        ];
+
+        const fetchBeerQuote = async () => {
+            if (!API_KEY) {
+                return FALLBACK_QUOTES[Math.floor(Math.random() * FALLBACK_QUOTES.length)];
+            }
+            // Simple fetch to Gemini API REST endpoint to avoid heavy SDK import issues in standalone mode
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{
+                                text: "Genereer PRECIES ÉÉN korte, grappige en motiverende Nederlandse zin (maximaal 15 woorden) over dat het tijd is voor bier, speciaal voor 'Smash Studios'. Stijl: Met een knipoog."
+                            }]
+                        }]
+                    })
+                });
+                const data = await response.json();
+                return data.candidates[0].content.parts[0].text.trim();
+            } catch (error) {
+                console.error("API Error", error);
+                return FALLBACK_QUOTES[Math.floor(Math.random() * FALLBACK_QUOTES.length)];
+            }
+        };
+
+        // --- COMPONENTS ---
+        
+        const Clock = ({ appState }) => {
+            const [currentTime, setCurrentTime] = useState(new Date());
+
+            useEffect(() => {
+                const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+                return () => clearInterval(timer);
+            }, []);
+
+            const getTextColorClass = () => {
+                if (appState === AppState.BEER_TIME) return 'text-beer';
+                if (appState === AppState.GO_HOME) return 'text-home';
+                return 'text-default';
+            };
+
+            return (
+                <div className={`clock-container ${getTextColorClass()}`}>
+                    <div className="clock-time">{formatTime(currentTime)}</div>
+                    <div className="clock-date">
+                        {currentTime.toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' })}
+                    </div>
+                </div>
+            );
+        };
+
+        const BeerStatus = ({ config, appState }) => {
+            if (appState === AppState.BEER_TIME) {
+                return (
+                    <div className="status-card beer-time">
+                        <h2 className="title-large text-beer title-rotate">HET IS TIJD!</h2>
+                        <p className="subtitle-beer">Smash Studios Borrel</p>
+                    </div>
+                );
+            }
+            if (appState === AppState.GO_HOME) {
+                return (
+                    <div className="status-card go-home">
+                        <div className="icon-container"><Moon size={40} className="icon-active" /></div>
+                        <h2 className="title-large text-home">INPAKKEN & WEGWEZEN</h2>
+                        <p className="subtitle-home">Iedereen mag naar huis</p>
+                    </div>
+                );
+            }
+            return (
+                <div className="status-card waiting">
+                    <div className="waiting-content">
+                        <p className="waiting-label">Vandaag bier tijd om</p>
+                        <div className="waiting-time">{formatShortTime(config.hour, config.minute)}</div>
+                    </div>
+                    <div className="info-row">
+                        <Info size={14} />
+                        <p>Tijd wordt dagelijks willekeurig bepaald tussen 11:00 en {new Date().getDay() === 5 ? '14:30' : '17:00'}.</p>
+                    </div>
+                </div>
+            );
+        };
+
+        const QuoteDisplay = ({ appState }) => {
+            const [quote, setQuote] = useState("");
+            const [loading, setLoading] = useState(false);
+
+            useEffect(() => {
+                const loadQuote = async () => {
+                    setLoading(true);
+                    const text = await fetchBeerQuote();
+                    setQuote(text);
+                    setLoading(false);
+                };
+
+                if (appState === AppState.BEER_TIME) {
+                    loadQuote();
+                } else if (appState === AppState.GO_HOME) {
+                    setQuote("Tot morgen toppers! Geniet van je avond.");
+                } else {
+                    setQuote("Nog even volhouden strijders...");
+                }
+            }, [appState]);
+
+            if (loading) return <div className="loading-text">Laden van wijsheid...</div>;
+
+            const isBeerTime = appState === AppState.BEER_TIME;
+            const isGoHome = appState === AppState.GO_HOME;
+            const getTextColorClass = () => {
+                if (isBeerTime) return 'text-beer';
+                if (isGoHome) return 'text-home';
+                return 'text-default';
+            };
+
+            return (
+                <div className="quote-container">
+                    <div className={`quote-wrapper ${isBeerTime ? 'active' : ''}`}>
+                        {isBeerTime && <div className="icon-float"><Beer size={48} /></div>}
+                        <p className={`quote-text ${getTextColorClass()}`}>"{quote}"</p>
+                    </div>
+                </div>
+            );
+        };
+
+        const Background = ({ appState }) => {
+            const isBeerTime = appState === AppState.BEER_TIME;
+            const isGoHome = appState === AppState.GO_HOME;
+
+            const bubbles = useMemo(() => {
+                return Array.from({ length: 40 }).map((_, i) => ({
+                    id: i,
+                    left: `${Math.random() * 100}%`,
+                    size: `${Math.random() * 15 + 2}px`,
+                    duration: `${Math.random() * 10 + 5}s`,
+                    delay: `${Math.random() * 10}s`,
+                    wobble: `${Math.random() * 50 - 25}px`,
+                }));
+            }, []);
+
+            const getGradientClass = () => {
+                if (isGoHome) return 'grad-home';
+                if (isBeerTime) return 'grad-beer';
+                return 'grad-default';
+            };
+
+            return (
+                <div className="bg-fixed">
+                    <div className={`bg-layer ${getGradientClass()} opacity-100`} />
+                    <div className="bg-layer radial-overlay" />
+                    <div className={`bg-layer glow-overlay-gold ${isBeerTime ? 'opacity-100' : 'opacity-0'}`} />
+                    <div className={`bg-layer glow-overlay-purple ${isGoHome ? 'opacity-100' : 'opacity-0'}`} />
+                    
+                    {bubbles.map((bubble) => (
+                        <div key={bubble.id} className="bubble" style={{
+                            left: bubble.left,
+                            width: isGoHome ? Math.max(2, parseFloat(bubble.size) / 3) + 'px' : bubble.size,
+                            height: isGoHome ? Math.max(2, parseFloat(bubble.size) / 3) + 'px' : bubble.size,
+                            animationDuration: isBeerTime ? `3s` : bubble.duration, 
+                            animationDelay: isBeerTime ? `${Math.random() * 2}s` : bubble.delay,
+                            '--wobble': isGoHome ? '0px' : bubble.wobble,
+                            backgroundColor: isBeerTime ? 'rgba(254, 240, 138, 0.4)' : isGoHome ? 'white' : 'rgba(255, 255, 255, 0.05)',
+                            boxShadow: isBeerTime ? '0 0 4px rgba(255,255,255,0.8)' : isGoHome ? '0 0 6px rgba(255,255,255,0.9)' : 'none'
+                        }} />
+                    ))}
+                    <div className={`foam-effect ${isBeerTime ? 'active' : ''}`} />
+                </div>
+            );
+        };
+
+        const DJ = ({ isBeerTime }) => {
+            const [isMuted, setIsMuted] = useState(false);
+            const [isFullscreen, setIsFullscreen] = useState(false);
+            const [isEmbedded, setIsEmbedded] = useState(false);
+            const VIDEO_ID = "KqJvQeY-s80"; 
+            const START_TIME = 48; 
+
+            useEffect(() => {
+                setIsEmbedded(isInIframe());
+                const handleFullscreenChange = () => setIsFullscreen(!!document.fullscreenElement);
+                document.addEventListener('fullscreenchange', handleFullscreenChange);
+                return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+            }, []);
+
+            const handleToggleMute = () => setIsMuted(!isMuted);
+            const handleToggleFullscreen = () => {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().catch((err) => console.error(err));
+                } else if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            };
+
+            const shouldPlay = isBeerTime && !isMuted;
+
+            return (
+                <>
+                    <div className="dj-controls">
+                        {!isEmbedded && (
+                            <button onClick={handleToggleFullscreen} className="btn-icon">
+                                {isFullscreen ? <Minimize size={24} /> : <Maximize size={24} />}
+                            </button>
+                        )}
+                        <button onClick={handleToggleMute} className="btn-icon group">
+                            {isMuted ? <VolumeX size={24} className="icon-muted" /> : (
+                                <div className="indicator-wrapper">
+                                    <Volume2 size={24} className={shouldPlay ? "icon-active" : ""} />
+                                    {shouldPlay && <span className="indicator-dot"></span>}
+                                </div>
+                            )}
+                        </button>
+                    </div>
+                    {isBeerTime && (
+                        <div style={{ display: 'none' }}>
+                           {!isMuted && (
+                             <iframe
+                               width="560" height="315"
+                               src={`https://www.youtube.com/embed/${VIDEO_ID}?autoplay=1&start=${START_TIME}&controls=0&loop=1&playlist=${VIDEO_ID}`}
+                               title="Beer Time Song"
+                               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                               allowFullScreen
+                             ></iframe>
+                           )}
+                        </div>
+                    )}
+                </>
+            );
+        };
+
+        const App = () => {
+            const [config, setConfig] = useState(null);
+            const [appState, setAppState] = useState(AppState.LOADING);
+            const [isEmbedded, setIsEmbedded] = useState(false);
+
+            useEffect(() => {
+                setConfig(getDailyBeerTime());
+                setIsEmbedded(isInIframe());
+            }, []);
+
+            useEffect(() => {
+                if (!config) return;
+                const checkTime = () => {
+                    const now = new Date();
+                    const currentTime = now.getTime();
+                    if (currentTime > config.endTimestamp) {
+                        setAppState(AppState.GO_HOME);
+                    } else if (currentTime >= config.timestamp) {
+                        setAppState(AppState.BEER_TIME);
+                    } else {
+                        setAppState(AppState.WAITING);
+                    }
+                };
+                checkTime();
+                const interval = setInterval(checkTime, 1000);
+                return () => clearInterval(interval);
+            }, [config]);
+
+            if (!config) return <div className="loading-screen">Laden...</div>;
+
+            return (
+                <div className="app-container">
+                    <Background appState={appState} />
+                    <DJ isBeerTime={appState === AppState.BEER_TIME} />
+                    <main className="main-content">
+                        <div className="content-wrapper">
+                            {!isEmbedded && (
+                                <div className="header-branding">Smash Studios Internal Tool</div>
+                            )}
+                            <Clock appState={appState} />
+                            <BeerStatus config={config} appState={appState} />
+                            <QuoteDisplay appState={appState} />
+                        </div>
+                        {!isEmbedded && (
+                            <footer className="footer">&copy; {new Date().getFullYear()} Smash Studios. Drink verantwoord.</footer>
+                        )}
+                    </main>
+                </div>
+            );
+        };
+
+        // Render
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
 </html>
