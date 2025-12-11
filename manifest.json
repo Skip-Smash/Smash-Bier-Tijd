@@ -1,0 +1,21 @@
+{
+  "short_name": "Smash Beer",
+  "name": "Smash Studios Beer Time",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/931/931949.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/931/931949.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#000000",
+  "orientation": "portrait"
+}
