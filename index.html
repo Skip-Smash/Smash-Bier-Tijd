@@ -5,75 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Smash Studios Beer Time</title>
     
-    <link rel="manifest" href="./manifest.json" />
+    <!-- PWA Settings -->
+    <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#000000" />
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/931/931949.png">
-
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-    <style>
-      @import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;700&display=swap');
-      
-      body {
-        font-family: 'Inter', sans-serif;
-        background-color: #111;
-        color: #fff;
-        overflow-x: hidden;
-        overscroll-behavior-y: none;
-      }
-      
-      .font-display { font-family: 'Anton', sans-serif; }
-
-      /* Custom animations */
-      @keyframes float {
-        0% { transform: translateY(0px); }
-        50% { transform: translateY(-10px); }
-        100% { transform: translateY(0px); }
-      }
-      .animate-float { animation: float 3s ease-in-out infinite; }
-
-      @keyframes pulse-glow {
-        0%, 100% { box-shadow: 0 0 20px rgba(234, 179, 8, 0.2); }
-        50% { box-shadow: 0 0 40px rgba(234, 179, 8, 0.6); }
-      }
-      .animate-pulse-glow { animation: pulse-glow 2s infinite; }
-
-      /* Background Bubbles Animation */
-      @keyframes rise {
-        0% { bottom: -10vh; transform: translateX(0); opacity: 0; }
-        20% { opacity: 1; }
-        80% { opacity: 0.8; }
-        100% { bottom: 110vh; transform: translateX(var(--wobble)); opacity: 0; }
-      }
-      .bubble {
-        position: absolute;
-        border-radius: 50%;
-        bottom: -10vh;
-        animation: rise infinite linear;
-        pointer-events: none;
-      }
-    </style>
-
-    <script type="importmap">
-    {
-      "imports": {
-        "react": "https://esm.sh/react@18.2.0",
-        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
-        "lucide-react": "https://esm.sh/lucide-react@0.263.1"
-      }
-    }
-    </script>
-    
-    <link rel="stylesheet" href="./index.css">
-  </head>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.2.1/",
+    "react": "https://esm.sh/react@^19.2.1",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.1/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.33.0",
+    "lucide-react": "https://esm.sh/lucide-react@^0.560.0",
+    "vite": "https://esm.sh/vite@^7.2.7",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2"
+  }
+}
+</script>
+</head>
   <body>
     <div id="root"></div>
-
-    <script type="text/babel" data-type="module" src="./index.tsx"></script>
+    <script type="module" src="/index.tsx"></script>
   </body>
 </html>
