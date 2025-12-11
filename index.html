@@ -342,8 +342,9 @@
             const targetDate = new Date(now);
             targetDate.setHours(targetHour, targetMinute, 0, 0);
 
+            // Go Home time logic: Every day after 17:00
             const endDate = new Date(now);
-            endDate.setHours(23, 59, 59, 999);
+            endDate.setHours(17, 0, 0, 0);
 
             return {
                 hour: targetHour,
