@@ -6,33 +6,18 @@
     <title>Smash Studios Beer Time</title>
     
     <!-- PWA Settings -->
-    <link rel="manifest" href="/manifest.json" />
+    <link rel="manifest" href="./manifest.json" />
     <meta name="theme-color" content="#000000" />
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/931/931949.png">
-    
-    <!-- Tailwind CSS via CDN for guaranteed styling -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            fontFamily: {
-              sans: ['Inter', 'sans-serif'],
-              display: ['Anton', 'sans-serif'],
-            },
-          }
-        }
-      }
-    </script>
   <script type="importmap">
 {
   "imports": {
-    "react/": "https://esm.sh/react@^19.2.1/",
     "react": "https://esm.sh/react@^19.2.1",
     "react-dom/": "https://esm.sh/react-dom@^19.2.1/",
+    "react/": "https://esm.sh/react@^19.2.1/",
     "@google/genai": "https://esm.sh/@google/genai@^1.33.0",
     "lucide-react": "https://esm.sh/lucide-react@^0.560.0",
     "vite": "https://esm.sh/vite@^7.2.7",
@@ -43,6 +28,6 @@
 </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/index.tsx"></script>
+    <script type="module" src="./index.tsx"></script>
   </body>
 </html>

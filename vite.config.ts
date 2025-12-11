@@ -5,6 +5,7 @@ import react from '@vitejs/plugin-react';
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '');
   return {
+    base: './', // Crucial for GitHub Pages to load assets correctly with relative paths
     plugins: [react()],
     define: {
       // Dit zorgt ervoor dat process.env.API_KEY werkt in de browser na de build
