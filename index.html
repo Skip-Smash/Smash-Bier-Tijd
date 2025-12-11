@@ -170,11 +170,14 @@
 
         /* Background */
         .bg-fixed { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
-        .bg-layer { position: absolute; inset: 0; transition: all 2s ease-in-out; }
         
-        .grad-waiting { background: linear-gradient(to bottom, #1e293b, #0f172a, #020617); } /* Sad, dark blue/slate */
-        .grad-beer { background: linear-gradient(to bottom, #eab308, #d97706, #78350f); }
-        .grad-home { background: linear-gradient(to bottom, #312e81, #581c87, #000); }
+        /* Layer opacity transition for smoothness */
+        .bg-layer { position: absolute; inset: 0; transition: opacity 2s ease-in-out; }
+        
+        /* Gradient Definitions */
+        .bg-grad-waiting { background: linear-gradient(to bottom, #1e293b, #0f172a, #020617); } /* Sad, dark blue/slate */
+        .bg-grad-beer { background: linear-gradient(to bottom, #eab308, #d97706, #78350f); }
+        .bg-grad-home { background: linear-gradient(to bottom, #312e81, #581c87, #000); }
         
         .radial-overlay { background: radial-gradient(circle at center, transparent 0%, #000 100%); opacity: 0.6; }
         .glow-overlay-gold { background: rgba(250, 204, 21, 0.2); mix-blend-mode: overlay; opacity: 0; }
@@ -226,7 +229,16 @@
         @keyframes rise { 0% { bottom: -10vh; transform: translateX(0); opacity: 0; } 20% { opacity: 1; } 80% { opacity: 0.8; } 100% { bottom: 110vh; transform: translateX(var(--wobble)); opacity: 0; } }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
         @keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }
-        .bubble { position: absolute; border-radius: 50%; bottom: -10vh; animation: rise infinite linear; pointer-events: none; }
+        
+        .bubble { 
+            position: absolute; 
+            border-radius: 50%; 
+            bottom: -10vh; 
+            animation: rise infinite linear; 
+            pointer-events: none;
+            /* Smooth transition for size and color changes */
+            transition: background-color 2s ease, width 2s ease, height 2s ease, box-shadow 2s ease;
+        }
         .loading-screen { min-height: 100vh; background-color: #0f172a; display: flex; align-items: center; justify-content: center; color: white; }
     </style>
 
@@ -596,15 +608,17 @@
                 }));
             }, []);
 
-            const getGradientClass = () => {
-                if (isGoHome) return 'grad-home';
-                if (isBeerTime) return 'grad-beer';
-                return 'grad-waiting';
-            };
+            // Boolean checks for opacity
+            // If waiting or loading, we show the waiting gradient
+            const showWaiting = isWaiting || appState === AppState.LOADING;
 
             return (
                 <div className="bg-fixed">
-                    <div className={`bg-layer ${getGradientClass()} opacity-100`} />
+                    {/* Stacked Gradient Layers */}
+                    <div className={`bg-layer bg-grad-waiting ${showWaiting ? 'opacity-100' : 'opacity-0'}`} />
+                    <div className={`bg-layer bg-grad-beer ${isBeerTime ? 'opacity-100' : 'opacity-0'}`} />
+                    <div className={`bg-layer bg-grad-home ${isGoHome ? 'opacity-100' : 'opacity-0'}`} />
+                    
                     <div className="bg-layer radial-overlay" />
                     <div className={`bg-layer glow-overlay-gold ${isBeerTime ? 'opacity-100' : 'opacity-0'}`} />
                     <div className={`bg-layer glow-overlay-purple ${isGoHome ? 'opacity-100' : 'opacity-0'}`} />
@@ -624,10 +638,14 @@
                     {!isWaiting && bubbles.map((bubble) => (
                         <div key={`bubble-${bubble.id}`} className="bubble" style={{
                             left: bubble.left,
+                            // Use ternary for properties that change based on state
                             width: isGoHome ? Math.max(2, parseFloat(bubble.size) / 3) + 'px' : bubble.size,
                             height: isGoHome ? Math.max(2, parseFloat(bubble.size) / 3) + 'px' : bubble.size,
-                            animationDuration: isBeerTime ? `3s` : bubble.duration, 
-                            animationDelay: isBeerTime ? `${Math.random() * 2}s` : bubble.delay,
+                            
+                            // FIX: Constant duration to avoid animation reset
+                            animationDuration: bubble.duration, 
+                            animationDelay: bubble.delay,
+                            
                             '--wobble': isGoHome ? '0px' : bubble.wobble,
                             backgroundColor: isBeerTime ? 'rgba(254, 240, 138, 0.4)' : isGoHome ? 'white' : 'transparent',
                             boxShadow: isBeerTime ? '0 0 4px rgba(255,255,255,0.8)' : isGoHome ? '0 0 6px rgba(255,255,255,0.9)' : 'none'
