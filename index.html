@@ -136,31 +136,37 @@
 
         /* Patience Button Styles */
         .btn-patience {
-            margin-top: 1.5rem;
-            background: transparent;
-            border: 1px solid rgba(255,255,255,0.2);
-            color: rgba(255,255,255,0.7);
-            padding: 0.5rem 1rem;
+            margin-top: 2.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: rgba(255,255,255,0.9);
+            padding: 1.25rem 2.5rem;
             border-radius: 9999px;
-            font-size: 0.8rem;
+            font-size: 1.25rem;
             cursor: pointer;
             transition: all 0.2s;
             font-family: var(--font-main);
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.1em;
+            font-weight: 700;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
         .btn-patience:hover {
-            background: rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.15);
             color: white;
-            border-color: rgba(255,255,255,0.5);
+            border-color: rgba(255,255,255,0.8);
+            transform: scale(1.05);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
         }
         .patience-text {
-            margin-top: 1rem;
+            margin-top: 1.5rem;
             color: #fcd34d;
             font-style: italic;
-            font-size: 0.9rem;
+            font-size: 1.1rem;
+            line-height: 1.4;
             animation: fadeIn 0.5s ease;
             max-width: 90%;
+            font-weight: 500;
         }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -282,7 +288,7 @@
     "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
     "lucide-react": "https://esm.sh/lucide-react@0.344.0",
     "@google/genai": "https://esm.sh/@google/genai@0.1.2",
-    "react/": "https://esm.sh/react@^19.2.1/",
+    "react/": "https://esm.sh/react@^19.2.3/",
     "vite": "https://esm.sh/vite@^7.2.7",
     "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2"
   }
@@ -364,6 +370,26 @@
             "Maak ons trots.",
             "Bijna weekend (of avond)!",
             "Hou vol, de beloning nadert."
+        ];
+        
+        const BUTTON_LABELS = [
+            "Het is nog geen tijd",
+            "Klik nog maar een keer",
+            "Nog iets langer wachten",
+            "Nog eentje dan?",
+            "Ik heb dorst!",
+            "Is het al zover?",
+            "Nee, nog niet",
+            "Misschien nu?",
+            "Helaas, werken!",
+            "Probeer het nog eens",
+            "Volhouden!",
+            "Mag ik al?",
+            "Geduld is een schone zaak",
+            "Blijven klikken...",
+            "Klik voor moed",
+            "Motivatie nodig?",
+            "Controleer de tijd"
         ];
 
         function seededRandom(seed) {
@@ -564,10 +590,15 @@
 
         const BeerStatus = ({ config, appState, currentTime }) => {
             const [patienceQuote, setPatienceQuote] = useState(null);
+            const [buttonText, setButtonText] = useState("Ik kan niet meer wachten!");
 
             const handlePatienceClick = () => {
                 const randomIndex = Math.floor(Math.random() * PATIENCE_QUOTES.length);
                 setPatienceQuote(PATIENCE_QUOTES[randomIndex]);
+                
+                // Change button text
+                const labelIndex = Math.floor(Math.random() * BUTTON_LABELS.length);
+                setButtonText(BUTTON_LABELS[labelIndex]);
             };
 
             if (appState === AppState.BEER_TIME) {
@@ -609,7 +640,7 @@
                             <p>Bijna tijd voor goud</p>
                         </div>
                          <button className="btn-patience" onClick={handlePatienceClick}>
-                            {patienceQuote ? "Nog eentje?" : "Ik kan niet meer wachten!"}
+                            {buttonText}
                         </button>
                         {patienceQuote && (
                             <div className="patience-text">"{patienceQuote}"</div>
@@ -636,7 +667,7 @@
                         <p>Tussen {getRangeText()}</p>
                     </div>
                     <button className="btn-patience" onClick={handlePatienceClick}>
-                        {patienceQuote ? "Nog eentje?" : "Ik kan niet meer wachten!"}
+                        {buttonText}
                     </button>
                     {patienceQuote && (
                         <div className="patience-text">"{patienceQuote}"</div>
