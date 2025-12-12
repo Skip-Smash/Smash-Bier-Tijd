@@ -112,6 +112,7 @@
             border-radius: 1rem; text-align: center;
             backdrop-filter: blur(8px); width: 100%; max-width: 500px;
             transition: all 1s ease;
+            display: flex; flex-direction: column; align-items: center;
         }
         .status-card.waiting {
             background: rgba(15, 23, 42, 0.6); /* Dark slate */
@@ -132,6 +133,37 @@
             justify-content: center; gap: 0.5rem; color: #64748b;
             font-size: 0.75rem; text-align: center;
         }
+
+        /* Patience Button Styles */
+        .btn-patience {
+            margin-top: 1.5rem;
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.2);
+            color: rgba(255,255,255,0.7);
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: var(--font-main);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .btn-patience:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border-color: rgba(255,255,255,0.5);
+        }
+        .patience-text {
+            margin-top: 1rem;
+            color: #fcd34d;
+            font-style: italic;
+            font-size: 0.9rem;
+            animation: fadeIn 0.5s ease;
+            max-width: 90%;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
 
         .status-card.beer-time {
             border: 4px solid var(--color-beer);
@@ -267,7 +299,7 @@
     <script type="text/babel" data-type="module">
         import React, { useEffect, useState, useMemo } from 'react';
         import ReactDOM from 'react-dom/client';
-        import { Info, Moon, Beer, Volume2, VolumeX, Maximize, Minimize, Timer, HelpCircle } from 'lucide-react';
+        import { Info, Moon, Beer, Volume2, VolumeX, Maximize, Minimize, Timer, HelpCircle, Hourglass } from 'lucide-react';
         
         // --- CONFIGURATION ---
         // VUL HIER JE API KEY IN ALS JE DIE HEBT, ANDERS BLIJFT HET LEEG
@@ -280,6 +312,59 @@
             BEER_TIME: 'BEER_TIME',
             GO_HOME: 'GO_HOME',
         };
+
+        const PATIENCE_QUOTES = [
+            "Nog even volhouden, tijger.",
+            "Geduld is een bittere plant, maar draagt heerlijke vruchten (bier).",
+            "Je bent er bijna, nog even die focus.",
+            "Denk aan de eerste slok... en typ door.",
+            "Rome is niet op één dag gebouwd, jouw dorst wel.",
+            "Werk eerst, bubbels later.",
+            "De koelkast loopt niet weg.",
+            "Focus op je scherm, niet op de klok.",
+            "Discipline is kiezen tussen wat je nu wilt en wat je straks wilt (bier).",
+            "Adem in, adem uit, programmeer voort.",
+            "Het bier smaakt beter als het werk af is.",
+            "Laat je niet gek maken, je bent een machine.",
+            "Nog een paar regels code, nog een paar minuten.",
+            "Denk aan de vrijmibo, zelfs als het dinsdag is.",
+            "Je baas kijkt mee... grapje, maar werk toch maar door.",
+            "De aanhouder wint (een biertje).",
+            "Stalen zenuwen, gouden keelgat straks.",
+            "Kwaliteit kost tijd, bier drinken kost niets (behalve levercellen).",
+            "Houd moed, het einde is in zicht.",
+            "Niet opgeven, je bent een Smash strijder.",
+            "Eerst die deadline, dan de headline (pils).",
+            "Geduld is de kunst van het hopen.",
+            "Blijf rustig en codeer verder.",
+            "Het is pas crisis als het bier op is.",
+            "Straks mag je los, nu nog even vastbijten.",
+            "Nog even die pixels perfect zetten.",
+            "Jij bent sterker dan je dorst.",
+            "Bijna tijd om te shinen (met een glas).",
+            "Hard werken wordt beloond met gerstenat.",
+            "Zet hem op, topper!",
+            "Laat die hersenen nog even kraken.",
+            "Focus modus aan, bier modus stand-by.",
+            "Je kan dit. Echt waar.",
+            "Denk aan het schuim...",
+            "Nog even knallen!",
+            "Wie wat bewaart, heeft wat voor in het glas.",
+            "Smash Studios draait op talent (en later op bier).",
+            "Nog heel even geduld a.u.b.",
+            "Loading beer... 99%...",
+            "Niet verslappen nu!",
+            "Trek die eindsprint!",
+            "Je verdient dat biertje straks dubbel.",
+            "Werk ze, maat!",
+            "Alles op zijn tijd.",
+            "Rustig aan, dan breekt het lijntje niet.",
+            "Concentratie is key.",
+            "Ga voor goud (werk) voordat je gaat voor goud (bier).",
+            "Maak ons trots.",
+            "Bijna weekend (of avond)!",
+            "Hou vol, de beloning nadert."
+        ];
 
         function seededRandom(seed) {
             let hash = 0;
@@ -478,6 +563,13 @@
         };
 
         const BeerStatus = ({ config, appState, currentTime }) => {
+            const [patienceQuote, setPatienceQuote] = useState(null);
+
+            const handlePatienceClick = () => {
+                const randomIndex = Math.floor(Math.random() * PATIENCE_QUOTES.length);
+                setPatienceQuote(PATIENCE_QUOTES[randomIndex]);
+            };
+
             if (appState === AppState.BEER_TIME) {
                 return (
                     <div className="status-card beer-time">
@@ -516,6 +608,12 @@
                             <Timer size={14} className="text-beer" />
                             <p>Bijna tijd voor goud</p>
                         </div>
+                         <button className="btn-patience" onClick={handlePatienceClick}>
+                            {patienceQuote ? "Nog eentje?" : "Ik kan niet meer wachten!"}
+                        </button>
+                        {patienceQuote && (
+                            <div className="patience-text">"{patienceQuote}"</div>
+                        )}
                     </div>
                 );
             }
@@ -537,6 +635,12 @@
                         <HelpCircle size={14} />
                         <p>Tussen {getRangeText()}</p>
                     </div>
+                    <button className="btn-patience" onClick={handlePatienceClick}>
+                        {patienceQuote ? "Nog eentje?" : "Ik kan niet meer wachten!"}
+                    </button>
+                    {patienceQuote && (
+                        <div className="patience-text">"{patienceQuote}"</div>
+                    )}
                 </div>
             );
         };
@@ -726,6 +830,13 @@
             useEffect(() => {
                 setConfig(getDailyBeerTime());
                 setIsEmbedded(isInIframe());
+
+                // Auto refresh every 10 minutes
+                const refreshTimer = setInterval(() => {
+                    window.location.reload();
+                }, 10 * 60 * 1000); // 600,000 milliseconds
+
+                return () => clearInterval(refreshTimer);
             }, []);
 
             useEffect(() => {
